@@ -1,10 +1,15 @@
 import { OpenAI } from "langchain/llms/openai";
 import { LLMChain, SimpleSequentialChain, SequentialChain } from "langchain/chains";
 import { PromptTemplate } from "langchain/prompts";
+import { BufferMemory } from "langchain/memory";
+
 import * as dotenv from 'dotenv'
 dotenv.config()
 
 const model = new OpenAI({ temperature: 0 })
+
+//Memory 
+const memory = new BufferMemory()
 
 // const res = await model.call('Tell me good name for my crockery company')
 // console.log(res);
@@ -20,7 +25,8 @@ const title_chain = new LLMChain({
     llm: model,
     prompt: title_template,
     verbose: true,
-    outputKey: 'company_name'
+    outputKey: 'company_name',
+    memory: memory
 })
 
 // const resA = await title_chain.run('Electronic') // will return text "TechEase Solutions"
@@ -39,7 +45,8 @@ const desc_template = new PromptTemplate({
 const desc_chain = new LLMChain({
     llm: model,
     prompt: desc_template,
-    outputKey: 'desc'
+    outputKey: 'desc',
+    memory: memory
 })
 
 //SimpleSequentialChain is for multiple single-input/single output 
@@ -58,6 +65,11 @@ const seq_chain = new SequentialChain({
     inputVariables: ['title'],
     outputVariables: ['company_name', 'desc']
 })
-const res = await seq_chain.call({ title: 'Real State' })
-console.log(res.company_name);
-console.log(res.desc);
+// const res = await seq_chain.call({ title: 'Real State' })
+// console.log(res.company_name);
+// console.log(res.desc);
+// console.log(res);
+
+//Memory
+// const loaded_mem = await memory.loadMemoryVariables({})
+// console.log(loaded_mem);
