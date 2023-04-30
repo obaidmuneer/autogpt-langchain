@@ -11,7 +11,7 @@ const model = new OpenAI({ temperature: 0 })
 
 // promp template 
 const title_template = new PromptTemplate({
-    template: "Tell me good name for my {title} company",
+    template: "Tell me a good name for my {title} company",
     inputVariables: ['title']
 })
 
@@ -19,7 +19,8 @@ const title_template = new PromptTemplate({
 const title_chain = new LLMChain({
     llm: model,
     prompt: title_template,
-    verbose: true
+    verbose: true,
+    outputKey: 'company_name'
 })
 
 // const resA = await title_chain.run('Electronic') // will return text "TechEase Solutions"
@@ -37,14 +38,26 @@ const desc_template = new PromptTemplate({
 
 const desc_chain = new LLMChain({
     llm: model,
-    prompt: desc_template
+    prompt: desc_template,
+    outputKey: 'desc'
 })
 
 //SimpleSequentialChain is for multiple single-input/single output 
-const simple_chain = new SimpleSequentialChain({ 
+const simple_chain = new SimpleSequentialChain({
     chains: [title_chain, desc_chain],
     verbose: true
 })
 
-const res = await simple_chain.run('Crockery')
-console.log(res);
+// const res = await simple_chain.run('Crockery')
+// console.log(res);
+
+// SequentialChain is for multiple chains that have more than one input or ouput keys
+
+const seq_chain = new SequentialChain({
+    chains: [title_chain, desc_chain],
+    inputVariables: ['title'],
+    outputVariables: ['company_name', 'desc']
+})
+const res = await seq_chain.call({ title: 'Real State' })
+console.log(res.company_name);
+console.log(res.desc);
